@@ -4,7 +4,6 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
-import RecallTestButton from "./components/RecallTestButton";
 
 export default function Home() {
   const { authenticated, ready } = usePrivy();
@@ -41,8 +40,6 @@ export default function Home() {
           <button className="dashboard-button">See Agent Metrics</button>
         </Link>
 
-        {/* Recall Button (for testing) */}
-        <RecallTestButton />
       </div>
     </div>
   );

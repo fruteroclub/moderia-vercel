@@ -4,13 +4,11 @@ import { createRecallClient } from "./recallClient";
 export async function fullRecallFlow() {
   const client = createRecallClient();
 
-  // Commented out for now because I've already purchased credits
-  // // Purchase credit
-  // const creditManager = client.creditManager();
-  // const { meta: creditMeta } = await creditManager.buy(parseEther("1"));
-  // console.log("✅ Credit purchased at:", creditMeta?.tx?.transactionHash);
+  // Purchase credit
+  const creditManager = client.creditManager();
+  const { meta: creditMeta } = await creditManager.buy(parseEther("1"));
+  console.log("✅ Credit purchased at:", creditMeta?.tx?.transactionHash);
 
-  // Not working, according GPT/Claude, RPC isn't working
   // Create a bucket
   const bucketManager = client.bucketManager();
   const {
