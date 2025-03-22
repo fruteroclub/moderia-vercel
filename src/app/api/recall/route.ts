@@ -4,8 +4,10 @@ import { fullRecallFlow } from "@/lib/recallActions";
 export async function GET() {
   try {
     await fullRecallFlow();
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({ success: true, message: "Recall SDK ran successfully." });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Recall API error:", error);
+    return NextResponse.json({ success: false, error: error.message || "Unknown error" }, { status: 500 });
   }
 }
