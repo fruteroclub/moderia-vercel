@@ -1,0 +1,12 @@
+{
+  "name": "recall-test-action-provider",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  }
+}
