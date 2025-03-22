@@ -1,0 +1,29 @@
+# Environment Variables
+.env
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Wallet data
+wallet_data.txt
+
+# Typescript build files
+*.tsbuildinfo
+
+# Keep source TypeScript files
+!src/**/*.ts
+!src/action-providers/**/*.ts
+    
