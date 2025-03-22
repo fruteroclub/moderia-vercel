@@ -257,14 +257,22 @@ async function runAutonomousMode(agent: any, config: any, interval = 10) {
         config,
       );
 
+      let response = "";
       for await (const chunk of stream) {
         if ("agent" in chunk) {
-          console.log(chunk.agent.messages[0].content);
-        } else if ("tools" in chunk) {
-          console.log(chunk.tools.messages[0].content);
+          response = chunk.agent.messages[0].content;
+        } else if ("tools" in chunk && chunk.tools.messages.length > 0) {
+          // Only append tool messages if they contain new information
+          const toolMessage = chunk.tools.messages[0].content;
+          if (!response.includes(toolMessage)) {
+            response = toolMessage;
+          }
         }
-        console.log("-------------------");
       }
+      
+      // Print the final response once
+      console.log(response);
+      console.log("-------------------");
 
       await new Promise((resolve) => setTimeout(resolve, interval * 1000));
     } catch (error) {
@@ -303,14 +311,22 @@ async function runChatMode(agent: any, config: any) {
         config,
       );
 
+      let response = "";
       for await (const chunk of stream) {
         if ("agent" in chunk) {
-          console.log(chunk.agent.messages[0].content);
-        } else if ("tools" in chunk) {
-          console.log(chunk.tools.messages[0].content);
+          response = chunk.agent.messages[0].content;
+        } else if ("tools" in chunk && chunk.tools.messages.length > 0) {
+          // Only append tool messages if they contain new information
+          const toolMessage = chunk.tools.messages[0].content;
+          if (!response.includes(toolMessage)) {
+            response = toolMessage;
+          }
         }
-        console.log("-------------------");
       }
+      
+      // Print the final response once
+      console.log(response);
+      console.log("-------------------");
     }
   } catch (error) {
     if (error instanceof Error) {

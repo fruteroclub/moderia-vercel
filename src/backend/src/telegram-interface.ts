@@ -83,9 +83,13 @@ export class TelegramInterface {
           let response = "";
           for await (const chunk of stream) {
             if ("agent" in chunk) {
-              response += chunk.agent.messages[0].content;
-            } else if ("tools" in chunk) {
-              response += chunk.tools.messages[0].content;
+              response = chunk.agent.messages[0].content;
+            } else if ("tools" in chunk && chunk.tools.messages.length > 0) {
+              // Only append tool messages if they contain new information
+              const toolMessage = chunk.tools.messages[0].content;
+              if (!response.includes(toolMessage)) {
+                response = toolMessage;
+              }
             }
           }
 
