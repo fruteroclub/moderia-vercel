@@ -1,86 +1,95 @@
-# ModerIA - AI Agent with Recall Network Integration
+# 🤖 ModerIA - AI Agent with Recall Network Integration
 
 ModerIA is an intelligent agent that leverages the power of the Recall Network for decentralized data storage and management.
 
-## Supported Protocols
+## 🔗 Supported Protocols
 
-### Recall Network
+### 🔄 Recall Network
 - Decentralized Data Storage Protocol
 - Features:
-  - Create and manage buckets for data organization
-  - Store data with custom keys
-  - Retrieve data by key
-  - Query data using prefixes
-  - Purchase and manage storage credits
-  - Monitor account balances
-  - Rich metadata support for improved data discovery
+  - 📦 Create and manage buckets for data organization
+  - 💾 Store data with custom keys
+  - 🔍 Retrieve data by key
+  - 🔎 Query data using prefixes
+  - 💰 Purchase and manage storage credits
+  - 💼 Monitor account balances
+  - 📋 Rich metadata support for improved data discovery
 
-### Service Marketplace
+### 🛒 Service Marketplace
 - Decentralized service marketplace built on Recall Network
 - Features:
-  - Create and manage service listings
-  - Book services
-  - Process payments
-  - Rate and review services
-  - Track service completion
-  - Dispute resolution
-  - Human-readable data storage
+  - 📝 Create and manage service listings
+  - 📅 Book services
+  - 💸 Process payments
+  - ⭐ Rate and review services
+  - ✅ Track service completion
+  - ⚖️ Dispute resolution
+  - 📄 Human-readable data storage
 
-## Operating Modes
+### 🧪 Recall Test
+- Testing functionality for Recall Network
+- Features:
+  - 🔄 Test basic Recall Network operations
+  - 📊 Verify data storage and retrieval
+  - 🧰 Validate bucket management
+  - 🔬 Test metadata handling
+
+## 🚀 Operating Modes
 
 ModerIA supports three operating modes:
 
-1. **Chat Mode**: Interactive command-line interface for direct user interaction
-2. **Autonomous Mode**: Bot operates independently, executing operations at set intervals
-3. **Telegram Mode**: Interface through Telegram messenger
+1. **💬 Chat Mode**: Interactive command-line interface for direct user interaction
+2. **🤖 Autonomous Mode**: Bot operates independently, executing operations at set intervals
+3. **📱 Telegram Mode**: Interface through Telegram messenger
 
-## Network Support
+## 🌐 Network Support
 
-- Recall Network Testnet
-- Network validation before operations
-- Automatic network selection at startup
+- 🧪 Recall Network Testnet
+- ✅ Network validation before operations
+- 🔄 Automatic network selection at startup
+- 🔀 Support for multiple networks (Base Sepolia, Base Mainnet)
 
-## Core Features
+## 🛠️ Core Features
 
-### Data Management
-- Create and manage storage buckets
-- Store data with custom keys
-- Retrieve data by key
-- Query data using prefixes
-- Monitor storage usage
-- Rich metadata annotation for enhanced searchability
-- Human-readable text format (JSON with indentation)
+### 📊 Data Management
+- 📁 Create and manage storage buckets
+- 📥 Store data with custom keys
+- 📤 Retrieve data by key
+- 🔍 Query data using prefixes
+- 📊 Monitor storage usage
+- 🏷️ Rich metadata annotation for enhanced searchability
+- 📝 Human-readable text format (JSON with indentation)
 
-### Service Marketplace
-- List services with detailed descriptions
-- Book services with custom requirements
-- Complete services with ratings and reviews
-- Process payments for completed services
-- View service history and analytics
-- Resolve disputes between providers and clients
+### 🏪 Service Marketplace
+- 📋 List services with detailed descriptions
+- 📝 Book services with custom requirements
+- ✅ Complete services with ratings and reviews
+- 💰 Process payments for completed services
+- 📈 View service history and analytics
+- 🤝 Resolve disputes between providers and clients
 
-### Credit Management
-- Purchase storage credits
-- Monitor credit balance
-- Track credit usage
+### 💳 Credit Management
+- 💰 Purchase storage credits
+- 💼 Monitor credit balance
+- 📊 Track credit usage
 
-### Safety Features
-- Network validation before operations
-- Balance and credit checks
-- Detailed error messages
-- Transaction confirmation waiting
-- Custom error handling for common scenarios
+### 🔐 Safety Features
+- ✅ Network validation before operations
+- 💰 Balance and credit checks
+- ⚠️ Detailed error messages
+- ⏳ Transaction confirmation waiting
+- 🛡️ Custom error handling for common scenarios
 
-## Error Handling
+## 🐛 Error Handling
 
 ModerIA handles various error scenarios:
-- Insufficient credits
-- Network mismatches
-- Failed transactions
-- Invalid input validation
-- Storage quota exceeded
+- ❌ Insufficient credits
+- 🔗 Network mismatches
+- ❌ Failed transactions
+- ⚠️ Invalid input validation
+- 📦 Storage quota exceeded
 
-## Development
+## 👨‍💻 Development
 
 To add new features or modify existing ones:
 1. Update the relevant action provider in `src/action-providers/`
@@ -88,20 +97,25 @@ To add new features or modify existing ones:
 3. Update the constants and error handlers
 4. Test thoroughly on testnet first
 
-## Environment Setup
+## 🔧 Environment Setup
 
 Required environment variables in `.env`:
 ```
 OPENAI_API_KEY=your_openai_api_key_here
-NETWORK_ID=recall-testnet
+NETWORK_ID=base-sepolia
+NETWORK_ID_2=base-mainnet
+RECALL_NETWORK="testnet"
+# Original wallet for general use
 WALLET_PRIVATE_KEY=your_wallet_private_key_here
+# Service marketplace specific wallets
 WALLET_PRIVATE_KEY_AGENT=your_agent_wallet_private_key_here
 WALLET_PRIVATE_KEY_PROVIDER=your_provider_wallet_private_key_here
 WALLET_PRIVATE_KEY_CLIENT=your_client_wallet_private_key_here
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here  # Optional, for Telegram mode
+# Optional, for Telegram mode
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 ```
 
-## Installation
+## 📥 Installation
 
 1. Clone the repository
 2. Install dependencies: `npm install`
@@ -109,8 +123,9 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here  # Optional, for Telegram mode
 4. Build the project: `npm run build`
 5. Start the agent: `npm run start`
 
-## Service Marketplace Test
+## 🧪 Testing
 
+### 🛒 Service Marketplace Test
 To test the service marketplace functionality:
 ```
 node dist/action-providers/service-marketplace/test.js
@@ -123,6 +138,18 @@ This will simulate the complete lifecycle of a service:
 4. Processing payments
 5. Viewing stored data in human-readable format
 
-## License
+### 🔄 Recall Network Test
+To test basic Recall Network functionality:
+```
+node dist/action-providers/recall-test/test.js
+```
+
+This will test core Recall Network operations:
+1. Creating buckets
+2. Storing data
+3. Retrieving data
+4. Testing metadata operations
+
+## 📜 License
 
 MIT
