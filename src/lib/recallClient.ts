@@ -6,7 +6,7 @@ import { http } from "viem";
 
 // Create a wallet client from a private key
 export function createRecallClient() {
-  const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`;
+  const privateKey = process.env.AGENT_WALLET_PRIVATE_KEY as `0x${string}`;
 
   const walletClient = createWalletClient({
     account: privateKeyToAccount(privateKey),
