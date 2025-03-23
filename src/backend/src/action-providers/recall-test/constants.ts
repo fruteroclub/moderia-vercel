@@ -1,9 +1,21 @@
 import { testnet } from "@recallnet/chains";
 
+export type NetworkType = 'testnet' | 'mainnet';
+
 export const RECALL_NETWORKS = {
   testnet,
   // Use testnet for both since mainnet might not be available yet
   mainnet: testnet,
+} as const;
+
+export const RECALL_PORTAL_URLS: Record<NetworkType, string> = {
+  testnet: "https://portal.recall.network",
+  mainnet: "https://portal.recall.network",
+};
+
+export const RECALL_EXPLORER_URLS: Record<NetworkType, string> = {
+  testnet: "https://explorer.recall.network",
+  mainnet: "https://explorer.recall.network",
 };
 
 export const RECALL_TEST_DESCRIPTION = "Test implementation of the Recall Network SDK";

@@ -201,23 +201,45 @@ async function initializeAgent() {
         - Create buckets for data organization
         - Store, retrieve, and query data on the Recall Network
         - Check balance of Recall accounts
+        - Store rich metadata with your data for enhanced discoverability
+
+        Service Marketplace - Decentralized Service Platform:
+        - Create and manage service listings with detailed metadata
+        - Book services and specify requirements
+        - Complete services with ratings and reviews
+        - Process payments for services
+        - Query available services with filters
+        - Resolve disputes between service providers and clients
 
         Important Network Information:
         - Recall Network works on its own testnet
         - Check network before operations
         - Verify balances and allowances
+        - All data is stored in human-readable format with searchable metadata
 
         Recall Network Operations Guide:
         1. First create a Recall client:
            - "Create a Recall client on testnet"
         2. Purchase credits if needed:
-           - "Purchase 1 ETH worth of Recall credits"
+           - "Purchase 0.01 ETH worth of Recall credits"
         3. Create a bucket for your data:
            - "Create a bucket named 'my-data'"
         4. Then you can store or retrieve data:
            - "Add object with key 'hello/world' and content 'hello world' to bucket 'my-data'"
            - "Query objects in bucket 'my-data' with prefix 'hello/'"
            - "Get object with key 'hello/world' from bucket 'my-data'"
+
+        Service Marketplace Guide:
+        1. Create a Recall client for the appropriate user type:
+           - "Create a Recall client for provider on testnet"
+        2. Create a service listing:
+           - "Create a service listing for French teaching at $50 per hour"
+        3. Query available services:
+           - "Query available services for language teaching"
+        4. Book a service:
+           - "Book service XYZ with name 'John Smith'"
+        5. Complete and rate a service:
+           - "Record completion of booking ABC with rating 5"
 
         Example Commands:
         Recall Operations:
@@ -227,6 +249,13 @@ async function initializeAgent() {
         - "Add object with key 'profiles/alice' and content '{name: Alice, age: 30}' to bucket 'user-data'"
         - "Query objects in bucket 'user-data' with prefix 'profiles/'"
         - "Get object with key 'profiles/alice' from bucket 'user-data'"
+
+        Service Marketplace:
+        - "Create a client for provider on testnet"
+        - "Create a service listing for Web Development at $75 per hour"
+        - "Query available services for development"
+        - "Book service service_12345 with name 'Alice Johnson'"
+        - "Record completion of booking booking_12345 with rating 4"
 
         Get the wallet details first to see what network you're on and what tokens are available.
       `,

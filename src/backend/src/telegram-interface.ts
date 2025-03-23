@@ -6,6 +6,10 @@ interface TelegramInterfaceOptions {
   onKill: () => void;
 }
 
+/**
+ * TelegramInterface provides a Telegram bot interface for interacting with the agent.
+ * Supports Recall Network operations including metadata storage for enhanced data discoverability.
+ */
 export class TelegramInterface {
   private bot: TelegramBot;
   private agent: any;
@@ -38,8 +42,36 @@ export class TelegramInterface {
       );
       this.bot.sendMessage(
         chatId,
-        "Hello! I am your AI assistant. How can I help you today?\nUse /exit to return to terminal or /kill to shut down the application.",
+        "Hello! I am your AI assistant with Recall Network integration. I can help with:\n" +
+        "- Storing data with rich metadata\n" +
+        "- Creating and managing service listings\n" +
+        "- Booking services and processing payments\n" +
+        "- Searching and retrieving data\n\n" +
+        "Use /exit to return to terminal or /kill to shut down the application.",
       );
+    });
+
+    // Handle /help command
+    this.bot.onText(/\/help/, (msg) => {
+      const chatId = msg.chat.id;
+      if (this.isStarted) {
+        this.bot.sendMessage(
+          chatId,
+          "Here are some example commands you can try:\n\n" +
+          "1. *Recall Network Operations:*\n" +
+          "- Create a Recall client for testnet\n" +
+          "- Purchase 0.01 ETH worth of Recall credits\n" +
+          "- Create a bucket for my data\n" +
+          "- Add an object with metadata to my bucket\n\n" +
+          "2. *Service Marketplace:*\n" +
+          "- Create a service listing for French teaching\n" +
+          "- Book a service with ID xyz\n" +
+          "- Query available services\n" +
+          "- Complete a service and leave a rating\n\n" +
+          "Just type your request normally and I'll help you!",
+          { parse_mode: "Markdown" }
+        );
+      }
     });
 
     // Handle /exit command
