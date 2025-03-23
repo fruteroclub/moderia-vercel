@@ -18,6 +18,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import {
+  useUpdateMentorProfile,
+  useMentorProfile,
+  useMentorStats,
+  useMentorServices,
+  useMentorBookings,
+} from "@/hooks/use-mentor-queries";
+import { usePrivy } from "@privy-io/react-auth";
 
 // Add new types for session management
 type SessionQuality = {
@@ -58,7 +66,116 @@ type SessionTranscript = {
   };
 };
 
+// Mock data for development
+const MOCK_DATA = {
+  profile: {
+    name: "Mel Innvertir",
+    title: "Head of Learning and Development",
+    location: "Mexico City, MX",
+    avatarUrl: "/placeholder-avatar.jpg",
+    rating: 4.99,
+    totalSessions: 650,
+  },
+  stats: {
+    responseTime: "9 hours",
+    completionRate: "98%",
+    satisfaction: "4.99",
+    providedServices: 45,
+    totalEarnings: 25000,
+    bookings: 32,
+  },
+  courses: [
+    {
+      id: "1",
+      title: "Go to Market Strategy 0 to 1",
+      description:
+        "Steps to create a go to market strategy when you're early stage going from 0 to 1.",
+      thumbnail: "https://assets.aceternity.com/demos/default.png",
+      mentees: 52,
+    },
+    {
+      id: "2",
+      title: "Web3 Product Development",
+      description:
+        "Learn to build and launch Web3 products from concept to deployment.",
+      thumbnail: "https://assets.aceternity.com/demos/default.png",
+      mentees: 38,
+    },
+  ],
+  activeRequests: [
+    {
+      id: "1",
+      title: "Need help with System Design",
+      requester: "John Smith",
+      requesterInitials: "JS",
+      status: "pending",
+    },
+    {
+      id: "2",
+      title: "Web3 Architecture Review",
+      requester: "Alice Johnson",
+      requesterInitials: "AJ",
+      status: "pending",
+    },
+  ],
+  activeSessions: [
+    {
+      id: "1",
+      title: "Technical Interview Prep",
+      scheduledTime: "2:00 PM",
+      status: "scheduled",
+    },
+    {
+      id: "2",
+      title: "Product Strategy Session",
+      scheduledTime: "4:30 PM",
+      status: "scheduled",
+    },
+  ],
+};
+
+// Mock data for services
+const MOCK_SERVICES = [
+  {
+    id: "1",
+    serviceType: "Web3 Consultation",
+    description: "One-on-one consultation for Web3 projects and architecture",
+    price: 150,
+    status: "active",
+  },
+  {
+    id: "2",
+    serviceType: "Technical Mentorship",
+    description: "Ongoing technical mentorship and career guidance",
+    price: 100,
+    status: "active",
+  },
+];
+
+// Mock data for bookings
+const MOCK_BOOKINGS = [
+  {
+    id: "1",
+    clientName: "John Doe",
+    bookingTime: new Date().toISOString(),
+    status: "confirmed",
+    duration: 60,
+  },
+  {
+    id: "2",
+    clientName: "Jane Smith",
+    bookingTime: new Date(Date.now() + 3600000).toISOString(),
+    status: "pending",
+    duration: 30,
+  },
+];
+
 export default function MentorDashboard() {
+  // 1. Move all hooks to the top
+  const { ready, authenticated, user } = usePrivy();
+  const { mutate: updateProfile, isPending: isUpdatingProfile } =
+    useUpdateMentorProfile();
+
   // Form States
   const [matchCode, setMatchCode] = useState("");
   const [usdcStake, setUsdcStake] = useState("");
@@ -66,7 +183,7 @@ export default function MentorDashboard() {
   const [hourlyRate, setHourlyRate] = useState("");
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
 
-  // New state for session management
+  // Session state
   const [currentSession, setCurrentSession] = useState<{
     meetingId?: string;
     isRecording: boolean;
@@ -76,17 +193,71 @@ export default function MentorDashboard() {
     isRecording: false,
   });
 
-  // Profile Actions
+  // Queries with proper loading states and mock data fallbacks
+  const { data: statsData, isLoading: isStatsLoading } = useMentorStats(
+    user?.id ?? ""
+  );
+
+  const { data: servicesData, isLoading: isServicesLoading } =
+    useMentorServices(user?.id ?? "");
+
+  const { data: bookingsData, isLoading: isBookingsLoading } =
+    useMentorBookings(user?.id ?? "");
+
+  // 2. Early returns after all hooks
+  if (!ready) {
+    return (
+      <div className="container py-8">
+        <Card className="p-6">
+          <div className="flex items-center justify-center">
+            <p>Loading...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!authenticated || !user) {
+    return (
+      <div className="container py-8">
+        <Card className="p-6">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <p>Please connect your wallet to access your dashboard</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // 3. Data preparation after hooks and conditionals
+  const displayStats = {
+    providedServices: MOCK_DATA.stats.providedServices,
+    totalEarnings: MOCK_DATA.stats.totalEarnings,
+    bookings: MOCK_DATA.stats.bookings,
+    responseTime: MOCK_DATA.stats.responseTime,
+    completionRate: MOCK_DATA.stats.completionRate,
+    satisfaction: MOCK_DATA.stats.satisfaction,
+  };
+
+  const displayServices = MOCK_SERVICES;
+  const displayBookings = MOCK_BOOKINGS;
+
+  // Use mock data directly instead of waiting for query results
+  const mockProfileData = {
+    user: MOCK_DATA.profile,
+  };
+
+  // Updated handler to use only available properties
   const handleEditProfile = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setIsLoading({ ...isLoading, editProfile: true });
-    try {
-      toast.info("🚧 Edit Profile - Coming Soon", {
-        description: "This feature is under development",
-      });
-    } finally {
-      setIsLoading({ ...isLoading, editProfile: false });
-    }
+    if (!mockProfileData.user || !mockProfileData.user.name) return;
+
+    updateProfile({
+      userId: user?.id ?? "",
+      data: {
+        name: mockProfileData.user.name,
+      },
+    });
   };
 
   // Course Actions
@@ -290,37 +461,34 @@ export default function MentorDashboard() {
       <Card className="p-6">
         <div className="flex items-start gap-6">
           <Avatar className="h-24 w-24">
-            <AvatarImage src="/placeholder-avatar.jpg" />
-            <AvatarFallback>ME</AvatarFallback>
+            <AvatarImage src={MOCK_DATA.profile.avatarUrl} />
+            <AvatarFallback>{MOCK_DATA.profile.name[0]}</AvatarFallback>
           </Avatar>
 
           <div className="flex-1 space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-2xl font-bold">Mel Innvertir</h1>
+                <h1 className="text-2xl font-bold">{MOCK_DATA.profile.name}</h1>
                 <p className="text-muted-foreground">
-                  Head of Learning and Development
+                  {MOCK_DATA.profile.title}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Globe className="h-3 w-3" />
-                    Mexico City, MX
+                    {MOCK_DATA.profile.location}
                   </Badge>
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    4.99
+                    {MOCK_DATA.profile.rating}
                   </Badge>
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    650 sessions
+                    {MOCK_DATA.profile.totalSessions} sessions
                   </Badge>
                 </div>
               </div>
-              <Button
-                onClick={handleEditProfile}
-                disabled={isLoading.editProfile}
-              >
-                {isLoading.editProfile ? "Saving..." : "Edit Profile"}
+              <Button onClick={handleEditProfile} disabled={isUpdatingProfile}>
+                {isUpdatingProfile ? "Saving..." : "Edit Profile"}
               </Button>
             </div>
 
@@ -330,7 +498,9 @@ export default function MentorDashboard() {
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Response Time</p>
                 </div>
-                <p className="text-lg font-semibold">Usually within 9 hours</p>
+                <p className="text-lg font-semibold">
+                  Usually within {MOCK_DATA.stats.responseTime}
+                </p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
@@ -339,19 +509,54 @@ export default function MentorDashboard() {
                     Completion Rate
                   </p>
                 </div>
-                <p className="text-lg font-semibold">98%</p>
+                <p className="text-lg font-semibold">
+                  {MOCK_DATA.stats.completionRate}
+                </p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Satisfaction</p>
                 </div>
-                <p className="text-lg font-semibold">4.99 / 5.0</p>
+                <p className="text-lg font-semibold">
+                  {MOCK_DATA.stats.satisfaction} / 5.0
+                </p>
               </Card>
             </div>
           </div>
         </div>
       </Card>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Services Provided</p>
+          </div>
+          <p className="text-lg font-semibold">
+            {isStatsLoading ? "Loading..." : displayStats.providedServices}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Total Earnings</p>
+          </div>
+          <p className="text-lg font-semibold">
+            {isStatsLoading ? "Loading..." : `$${displayStats.totalEarnings}`}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Total Bookings</p>
+          </div>
+          <p className="text-lg font-semibold">
+            {isStatsLoading ? "Loading..." : displayStats.bookings}
+          </p>
+        </Card>
+      </div>
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="courses" className="space-y-6">
@@ -376,55 +581,38 @@ export default function MentorDashboard() {
 
         <TabsContent value="courses" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Course Cards */}
-            <Card className="overflow-hidden">
-              <div className="aspect-video relative">
-                <img
-                  src="https://assets.aceternity.com/demos/default.png"
-                  alt="Course thumbnail"
-                  className="object-cover w-full h-full"
-                />
+            {isServicesLoading ? (
+              <div>Loading services...</div>
+            ) : displayServices.length > 0 ? (
+              displayServices.map((service) => (
+                <Card key={service.id} className="overflow-hidden">
+                  <div className="p-4 space-y-2">
+                    <h3 className="font-semibold">{service.serviceType}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {service.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">
+                        $
+                        {typeof service.price === "number"
+                          ? service.price.toString()
+                          : typeof service.price === "object" // Handle Decimal type
+                          ? service.price
+                          : service.price}
+                      </Badge>
+                      <Badge variant="outline">{service.status}</Badge>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-8">
+                <p className="text-muted-foreground">No services available</p>
+                <Button onClick={handleCreateCourse} className="mt-4">
+                  Create Your First Service
+                </Button>
               </div>
-              <div className="p-4 space-y-2">
-                <h3 className="font-semibold">Go to Market Strategy 0 to 1</h3>
-                <p className="text-sm text-muted-foreground">
-                  Steps to create a go to market strategy when you're early
-                  stage going from 0 to 1.
-                </p>
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">52 mentees</Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) =>
-                      handleManageCourse(e, "Go to Market Strategy 0 to 1")
-                    }
-                    disabled={
-                      isLoading["manageCourse-Go to Market Strategy 0 to 1"]
-                    }
-                  >
-                    {isLoading["manageCourse-Go to Market Strategy 0 to 1"]
-                      ? "Managing..."
-                      : "Manage"}
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Add New Course Card */}
-            <Card className="flex items-center justify-center aspect-[4/3] border-2 border-dashed">
-              <Button
-                variant="ghost"
-                className="flex flex-col gap-2"
-                onClick={handleCreateCourse}
-                disabled={isLoading.createCourse}
-              >
-                <BookOpen className="h-8 w-8" />
-                <span>
-                  {isLoading.createCourse ? "Creating..." : "Create New Course"}
-                </span>
-              </Button>
-            </Card>
+            )}
           </div>
         </TabsContent>
 
@@ -467,110 +655,88 @@ export default function MentorDashboard() {
           </Card>
 
           <ScrollArea className="h-[400px]">
-            <Card className="p-4 mb-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-medium">Technical Interview Prep</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Today at 2:00 PM
-                  </p>
-                  {currentSession.isRecording && (
-                    <Badge variant="destructive" className="animate-pulse">
-                      Recording
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {!currentSession.isRecording ? (
-                    <Button
-                      onClick={(e) =>
-                        handleJoinCall(e, "Technical Interview Prep")
-                      }
-                      disabled={isLoading["joinCall-Technical Interview Prep"]}
-                    >
-                      {isLoading["joinCall-Technical Interview Prep"]
-                        ? "Joining..."
-                        : "Join Call"}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="destructive"
-                      onClick={(e) =>
-                        handleEndSession(e, "Technical Interview Prep")
-                      }
-                      disabled={
-                        isLoading["endSession-Technical Interview Prep"]
-                      }
-                    >
-                      {isLoading["endSession-Technical Interview Prep"]
-                        ? "Ending..."
-                        : "End Session"}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {currentSession.transcript && (
-                <div className="mt-4 space-y-2">
-                  <h4 className="font-medium">Session Summary</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {currentSession.transcript.summary.overview}
-                  </p>
-                  {currentSession.analysis && (
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      <div>
-                        <p className="text-sm font-medium">Quality Score</p>
-                        <p className="text-2xl font-bold">
-                          {currentSession.analysis.qualityScore.overallScore}/10
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Duration</p>
-                        <p className="text-2xl font-bold">
-                          {currentSession.analysis.duration} min
-                        </p>
-                      </div>
+            {isBookingsLoading ? (
+              <div>Loading bookings...</div>
+            ) : displayBookings.length > 0 ? (
+              displayBookings.map((booking) => (
+                <Card key={booking.id} className="p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h3 className="font-medium">{booking.clientName}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(booking.bookingTime).toLocaleString()}
+                      </p>
+                      <Badge variant="outline">{booking.status}</Badge>
                     </div>
-                  )}
-                </div>
-              )}
-            </Card>
+                    <div className="space-x-2">
+                      <Button
+                        onClick={(e) => handleJoinCall(e, booking.id)}
+                        disabled={
+                          booking.status !== "confirmed" ||
+                          isLoading[`joinCall-${booking.id}`]
+                        }
+                      >
+                        {isLoading[`joinCall-${booking.id}`]
+                          ? "Joining..."
+                          : "Join Call"}
+                      </Button>
+                      {booking.status === "confirmed" && (
+                        <Button
+                          variant="outline"
+                          onClick={(e) => handleEndSession(e, booking.id)}
+                          disabled={isLoading[`endSession-${booking.id}`]}
+                        >
+                          {isLoading[`endSession-${booking.id}`]
+                            ? "Ending..."
+                            : "End Session"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No active bookings</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Bookings will appear here once clients schedule sessions
+                </p>
+              </div>
+            )}
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="requests">
           <ScrollArea className="h-[500px]">
-            {/* Help Requests List */}
-            <Card className="p-4 mb-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-medium">Need help with System Design</h3>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback>JS</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-muted-foreground">
-                      John Smith
-                    </span>
+            {MOCK_DATA.activeRequests.map((request) => (
+              <Card key={request.id} className="p-4 mb-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-medium">{request.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback>
+                          {request.requesterInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-muted-foreground">
+                        {request.requester}
+                      </span>
+                    </div>
                   </div>
+                  <Button
+                    onClick={(e) =>
+                      handleAcceptRequest(e, request.title, request.requester)
+                    }
+                    disabled={isLoading[`acceptRequest-${request.title}`]}
+                  >
+                    {isLoading[`acceptRequest-${request.title}`]
+                      ? "Accepting..."
+                      : "Accept Request"}
+                  </Button>
                 </div>
-                <Button
-                  onClick={(e) =>
-                    handleAcceptRequest(
-                      e,
-                      "Need help with System Design",
-                      "John Smith"
-                    )
-                  }
-                  disabled={
-                    isLoading["acceptRequest-Need help with System Design"]
-                  }
-                >
-                  {isLoading["acceptRequest-Need help with System Design"]
-                    ? "Accepting..."
-                    : "Accept Request"}
-                </Button>
-              </div>
-            </Card>
+              </Card>
+            ))}
           </ScrollArea>
         </TabsContent>
 
