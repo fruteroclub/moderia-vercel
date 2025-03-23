@@ -45,6 +45,7 @@ model Service {
   bookings     Booking[]
   completions  CompletionRecord[]
   payments     Payment[]
+  transcript   Transcript?
 }
 
 model Booking {
@@ -103,4 +104,19 @@ model Payment {
   // Recipient relation
   recipientId     String
   recipient       User     @relation("RecipientPayments", fields: [recipientId], references: [id])
+}
+
+// New model for Otter AI transcripts
+model Transcript {
+  id            String   @id @default(uuid())
+  transcriptUrl String?
+  content       String?  @db.Text
+  status        String   @default("pending") // pending, processing, completed, failed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  serviceId     String   @unique
+  service       Service  @relation(fields: [serviceId], references: [id])
+
+  @@index([status])
 } 
