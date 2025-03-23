@@ -11,7 +11,7 @@ import AuthButton from "@/components/auth/authButton";
 const navItems = [
   {
     name: "Home",
-    link: "/",
+    link: "/dashboard",
   },
   {
     name: "Student",
