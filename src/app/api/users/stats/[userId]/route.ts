@@ -3,15 +3,17 @@ import * as userController from "@/server/controllers/user.controller";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const stats = await userController.getUserStats(params.userId);
+    // Access the userId from params
+    const { userId } = await params;
+    const stats = await userController.getUserStats(userId);
     if (!stats) {
       return NextResponse.json(
         {
           error: "Not found",
-          errorMessage: `Stats for user ${params.userId} not found`,
+          errorMessage: `Stats for user ${userId} not found`,
         },
         { status: 404 }
       );

@@ -14,25 +14,18 @@ const updateUserSchema = z.object({
   email: z.string().email().optional(),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
   try {
-    const searchParams = new URL(req.url).searchParams;
-    const walletAddress = searchParams.get("walletAddress");
-    const userId = searchParams.get("userId");
-
-    // Handle wallet address lookup
-    if (walletAddress) {
-      const user = await userController.getUserByWalletAddress(walletAddress);
-      if (!user) {
-        return NextResponse.json(
-          {
-            error: "Not found",
-            errorMessage: `User with wallet address ${walletAddress} not found`,
-          },
-          { status: 404 }
-        );
-      }
-      return NextResponse.json({ user });
+    // Access the userId from params
+    const { userId } = await params;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
     }
 
     // Handle user ID lookup
