@@ -8,10 +8,23 @@ ModerIA is an intelligent agent that leverages the power of the Recall Network f
 - Decentralized Data Storage Protocol
 - Features:
   - Create and manage buckets for data organization
-  - Store and retrieve data with key-value pairs
+  - Store data with custom keys
+  - Retrieve data by key
   - Query data using prefixes
   - Purchase and manage storage credits
   - Monitor account balances
+  - Rich metadata support for improved data discovery
+
+### Service Marketplace
+- Decentralized service marketplace built on Recall Network
+- Features:
+  - Create and manage service listings
+  - Book services
+  - Process payments
+  - Rate and review services
+  - Track service completion
+  - Dispute resolution
+  - Human-readable data storage
 
 ## Operating Modes
 
@@ -35,6 +48,16 @@ ModerIA supports three operating modes:
 - Retrieve data by key
 - Query data using prefixes
 - Monitor storage usage
+- Rich metadata annotation for enhanced searchability
+- Human-readable text format (JSON with indentation)
+
+### Service Marketplace
+- List services with detailed descriptions
+- Book services with custom requirements
+- Complete services with ratings and reviews
+- Process payments for completed services
+- View service history and analytics
+- Resolve disputes between providers and clients
 
 ### Credit Management
 - Purchase storage credits
@@ -72,6 +95,9 @@ Required environment variables in `.env`:
 OPENAI_API_KEY=your_openai_api_key_here
 NETWORK_ID=recall-testnet
 WALLET_PRIVATE_KEY=your_wallet_private_key_here
+WALLET_PRIVATE_KEY_AGENT=your_agent_wallet_private_key_here
+WALLET_PRIVATE_KEY_PROVIDER=your_provider_wallet_private_key_here
+WALLET_PRIVATE_KEY_CLIENT=your_client_wallet_private_key_here
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here  # Optional, for Telegram mode
 ```
 
@@ -82,6 +108,20 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here  # Optional, for Telegram mode
 3. Copy `.env.example` to `.env` and fill in your details
 4. Build the project: `npm run build`
 5. Start the agent: `npm run start`
+
+## Service Marketplace Test
+
+To test the service marketplace functionality:
+```
+node dist/action-providers/service-marketplace/test.js
+```
+
+This will simulate the complete lifecycle of a service:
+1. Creating service listings
+2. Booking services
+3. Completing services
+4. Processing payments
+5. Viewing stored data in human-readable format
 
 ## License
 
