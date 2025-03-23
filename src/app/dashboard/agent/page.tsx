@@ -20,6 +20,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import type { Session, SessionStatus } from "@/types/session";
+import {
+  evaluateSession,
+  formatEvaluationResult,
+  type EvaluationInputs,
+} from "@/lib/anthropicEvaluations";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const conversations = [
   `
@@ -1092,7 +1105,7 @@ Student: Yes, identified three - already working on solutions.
 ];
 
 // Convert conversation data to sessions
-const initialSessions: Session[] = conversations.map((conv) => {
+const initialSessions: Session[] = conversations.map((conv, index) => {
   const lines = conv.split("\n");
   const titleLine = lines.find((line) =>
     line.includes("Transcript for meeting:")
@@ -1103,13 +1116,14 @@ const initialSessions: Session[] = conversations.map((conv) => {
   const scoreLine = lines.find((line) => line.includes("Quality Score:"));
   const score = scoreLine ? parseFloat(scoreLine.split(": ")[1]) : 0;
 
-  // Generate a random speaking time between 35% and 60%
-  const studentSpeaking = Math.floor(Math.random() * (60 - 35 + 1)) + 35;
+  // Use a stable date based on index instead of random
+  const date = new Date();
+  date.setDate(date.getDate() - index);
 
   return {
     id: faker.string.uuid(),
     title,
-    date: faker.date.recent({ days: 14 }).toLocaleDateString(),
+    date: date.toLocaleDateString(),
     duration,
     qualityScore: score,
     status:
@@ -1119,11 +1133,11 @@ const initialSessions: Session[] = conversations.map((conv) => {
         ? "pending_signature"
         : "disputed",
     student: {
-      speakingTime: studentSpeaking,
+      speakingTime: 35, // Default value, will be updated in useEffect
       engagement: score,
     },
     instructor: {
-      speakingTime: 100 - studentSpeaking,
+      speakingTime: 65, // Default value, will be updated in useEffect
     },
   };
 });
@@ -1146,10 +1160,68 @@ function getStatusColor(status: SessionStatus): string {
 function SessionCard({
   session,
   onStatusChange,
+  onEvaluate,
+  isEvaluating,
+  veredict,
 }: {
   session: Session;
   onStatusChange: (id: string, status: SessionStatus) => void;
+  onEvaluate: (session: Session) => Promise<void>;
+  isEvaluating: boolean;
+  veredict?: string;
 }) {
+  const [isApplyingVerdict, setIsApplyingVerdict] = useState(false);
+  const [verdictApplied, setVerdictApplied] = useState(false);
+
+  // Extract payment distribution from verdict if it exists
+  const paymentDistribution = veredict
+    ? (() => {
+        try {
+          const match = veredict.match(
+            /### Payment Distribution\n([\s\S]*?)\n\n/
+          );
+          if (match) {
+            const lines = match[1].split("\n");
+            return {
+              mentor: parseFloat(lines[0].match(/\d+(\.\d+)?/)?.[0] || "0"),
+              mentee: parseFloat(lines[1].match(/\d+(\.\d+)?/)?.[0] || "0"),
+              agent: parseFloat(lines[2].match(/\d+(\.\d+)?/)?.[0] || "0"),
+              platform: parseFloat(lines[3].match(/\d+(\.\d+)?/)?.[0] || "0"),
+            };
+          }
+          return null;
+        } catch (e) {
+          console.error("Error parsing payment distribution:", e);
+          return null;
+        }
+      })()
+    : null;
+
+  const handleApplyVerdict = async () => {
+    if (!paymentDistribution) return;
+
+    try {
+      setIsApplyingVerdict(true);
+      // Here you would integrate with your smart contract to distribute payments
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
+
+      // Update session status to executed
+      onStatusChange(session.id, "executed");
+      setVerdictApplied(true);
+
+      toast.success("Verdict Applied", {
+        description: "Payments have been distributed according to the verdict",
+      });
+    } catch (error) {
+      toast.error("Failed to apply verdict", {
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    } finally {
+      setIsApplyingVerdict(false);
+    }
+  };
+
   return (
     <Card className="mb-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1159,36 +1231,128 @@ function SessionCard({
             {session.date} • {session.duration}
           </CardDescription>
         </div>
-        <Select
-          defaultValue={session.status}
-          onValueChange={(value: SessionStatus) =>
-            onStatusChange(session.id, value)
-          }
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="disputed">Disputed</SelectItem>
-            <SelectItem value="pending_signature">Pending Signature</SelectItem>
-            <SelectItem value="executed">Executed</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          {(session.status === "disputed" ||
+            session.status === "pending_signature") && (
+            <Button
+              variant="outline"
+              onClick={() => onEvaluate(session)}
+              disabled={isEvaluating}
+            >
+              {isEvaluating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Evaluating
+                </>
+              ) : (
+                "Evaluate"
+              )}
+            </Button>
+          )}
+          <Select
+            defaultValue={session.status}
+            onValueChange={(value: SessionStatus) =>
+              onStatusChange(session.id, value)
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="disputed">Disputed</SelectItem>
+              <SelectItem value="pending_signature">
+                Pending Signature
+              </SelectItem>
+              <SelectItem value="executed">Executed</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
-              Student Speaking Time: {session.student.speakingTime.toString()}%
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Quality Score: {session.qualityScore.toFixed(1)}/10
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                Student Speaking Time: {session.student.speakingTime.toString()}
+                %
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Quality Score: {session.qualityScore.toFixed(1)}/10
+              </p>
+            </div>
+            <Badge
+              variant="secondary"
+              className={getStatusColor(session.status)}
+            >
+              {session.status.replace("_", " ").toUpperCase()}
+            </Badge>
           </div>
-          <Badge variant="secondary" className={getStatusColor(session.status)}>
-            {session.status.replace("_", " ").toUpperCase()}
-          </Badge>
+
+          {veredict && paymentDistribution && (
+            <div className="border rounded-lg">
+              <div className="flex flex-col w-full">
+                <div className="px-4 py-2 border-b">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-sm">Payment Distribution</p>
+                    {session.status !== "executed" && !verdictApplied && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleApplyVerdict}
+                        disabled={isApplyingVerdict}
+                      >
+                        {isApplyingVerdict ? (
+                          <>
+                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            Applying...
+                          </>
+                        ) : (
+                          "Apply Verdict"
+                        )}
+                      </Button>
+                    )}
+                    {(session.status === "executed" || verdictApplied) && (
+                      <Badge
+                        variant="outline"
+                        className="bg-green-50 text-green-600"
+                      >
+                        Verdict Applied
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-blue-50">
+                      Mentor: {paymentDistribution.mentor}%
+                    </Badge>
+                    <Badge variant="outline" className="bg-green-50">
+                      Mentee: {paymentDistribution.mentee}%
+                    </Badge>
+                    <Badge variant="outline" className="bg-yellow-50">
+                      Agent: {paymentDistribution.agent}%
+                    </Badge>
+                    <Badge variant="outline" className="bg-purple-50">
+                      Platform: {paymentDistribution.platform}%
+                    </Badge>
+                  </div>
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="verdict" className="border-0">
+                    <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
+                      <span className="text-sm text-muted-foreground">
+                        View full verdict
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="px-4 py-3 bg-gray-50 text-sm whitespace-pre-wrap border-t">
+                        {veredict}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -1196,8 +1360,36 @@ function SessionCard({
 }
 
 export default function AgentDashboard() {
+  const [sessionId, setSessionId] = useState<string>("");
+  const [veredict, setVeredict] = useState<string>("");
   const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const [hasMounted, setHasMounted] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Update speaking times after initial mount
+  useEffect(() => {
+    if (!hasMounted) {
+      setHasMounted(true);
+      // Update speaking times with random values
+      setSessions((prevSessions) =>
+        prevSessions.map((session) => {
+          const studentSpeaking =
+            Math.floor(Math.random() * (60 - 35 + 1)) + 35;
+          return {
+            ...session,
+            student: {
+              ...session.student,
+              speakingTime: studentSpeaking,
+            },
+            instructor: {
+              ...session.instructor,
+              speakingTime: 100 - studentSpeaking,
+            },
+          };
+        })
+      );
+    }
+  }, [hasMounted]);
 
   const handleStatusChange = (id: string, newStatus: SessionStatus) => {
     setSessions((prevSessions) =>
@@ -1205,6 +1397,67 @@ export default function AgentDashboard() {
         session.id === id ? { ...session, status: newStatus } : session
       )
     );
+  };
+
+  const handleEvaluate = async (session: Session) => {
+    try {
+      setSessionId(session.id);
+      // Find and sanitize the transcript
+      const transcript =
+        conversations.find((conv) => conv.includes(session.title)) || "";
+      // Sanitize the transcript by removing control characters and ensuring valid JSON string
+      const sanitizedTranscript = transcript
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Remove control characters
+        .replace(/\u2028/g, "\\n") // Replace line separator
+        .replace(/\u2029/g, "\\n"); // Replace paragraph separator
+
+      // Convert session data to evaluation inputs
+      const evaluationInputs: EvaluationInputs = {
+        transcript: sanitizedTranscript,
+        duration: session.duration,
+        speakerBreakdown: {
+          instructor: session.instructor.speakingTime,
+          student: session.student.speakingTime,
+        },
+        engagementMetrics: {
+          "Student Engagement": session.student.engagement,
+          "Speaking Balance": `${session.student.speakingTime}% student / ${session.instructor.speakingTime}% instructor`,
+        },
+        qualityScore: session.qualityScore,
+        sessionHighlights: [],
+        sessionConcerns: [],
+      };
+
+      // Validate the input object can be safely stringified
+      JSON.parse(JSON.stringify(evaluationInputs));
+
+      const evaluation = await evaluateSession(
+        evaluationInputs,
+        setIsEvaluating
+      );
+      const formattedResult = formatEvaluationResult(evaluation);
+
+      // Update session status based on evaluation
+      const newStatus: SessionStatus =
+        evaluation.qualityRating >= 3 ? "pending_signature" : "disputed";
+      handleStatusChange(session.id, newStatus);
+      setVeredict(formattedResult);
+
+      // Show evaluation results
+      toast.success("Session Evaluated", {
+        description: "Veredict created successfully",
+        duration: 10000,
+      });
+    } catch (error) {
+      console.error("Evaluation error:", error);
+      toast.error("Failed to evaluate session", {
+        description:
+          error instanceof Error
+            ? `Error: ${error.message}. Please try evaluating again.`
+            : "Unknown error occurred while evaluating the session. Please try again.",
+      });
+      setIsEvaluating(false);
+    }
   };
 
   const stats = {
@@ -1252,6 +1505,9 @@ export default function AgentDashboard() {
               key={session.id}
               session={session}
               onStatusChange={handleStatusChange}
+              onEvaluate={handleEvaluate}
+              isEvaluating={isEvaluating}
+              veredict={sessionId === session.id ? veredict : ""}
             />
           ))}
         </ScrollArea>
