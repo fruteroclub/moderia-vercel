@@ -1,30 +1,8 @@
-"use client";
-
-import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Leaderboard } from "@/components/leaderboard";
 
 export default function Home() {
-  const { authenticated, ready } = usePrivy();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (ready && !authenticated) {
-      router.push("/login");
-    }
-  }, [ready, authenticated, router]);
-
-  if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import AuthButton from "@/components/auth/authButton";
 
 const navItems = [
   {
@@ -68,9 +69,9 @@ const DesktopNav = ({
           </Link>
         ))}
       </div>
-      <button className="hidden md:block px-8 py-2 text-sm font-bold rounded-full bg-primary text-primary-foreground">
-        Book a call
-      </button>
+      <div className="hidden md:block">
+        <AuthButton />
+      </div>
     </motion.div>
   );
 };
@@ -114,9 +115,7 @@ const MobileNav = ({
                 {navItem.name}
               </Link>
             ))}
-            <button className="w-full px-8 py-2 rounded-lg bg-primary text-primary-foreground font-medium">
-              Book a call
-            </button>
+            <AuthButton setIsMenuOpen={setOpen} />
           </motion.div>
         )}
       </AnimatePresence>

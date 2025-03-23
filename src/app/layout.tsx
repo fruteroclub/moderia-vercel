@@ -16,7 +16,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <div className="relative flex min-h-screen flex-col">
             <Navbar />
-            <div className="flex-1">{children}</div>
+            <main className="flex-1 flex flex-col items-center justify-center">
+              {children}
+            </main>
           </div>
         </Providers>
       </body>

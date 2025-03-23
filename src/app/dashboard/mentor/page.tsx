@@ -32,12 +32,16 @@ export default function MentorDashboard() {
             value={usdcStake}
             onChange={(e) => setUsdcStake(e.target.value)}
           />
-          <button className="mt-2 p-2 w-full bg-green-500 text-white rounded-md">Stake</button>
+          <button className="mt-2 p-2 w-full bg-green-500 text-white rounded-md">
+            Stake
+          </button>
         </div>
 
         {/* Meeting Link */}
         <div className="mt-4 p-3 bg-blue-100 text-center rounded-md">
-          <p>📅 Meet Link: <a href="#">https://meet.google.com/example</a></p>
+          <p>
+            📅 Meet Link: <a href="#">https://meet.google.com/example</a>
+          </p>
         </div>
       </div>
     </main>
