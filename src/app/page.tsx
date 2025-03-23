@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Leaderboard } from "@/components/leaderboard";
 
 export default function Home() {
   const { authenticated, ready } = usePrivy();
@@ -65,12 +66,12 @@ export default function Home() {
 
           {/* Right Column - Leaderboard Card */}
           <div className="flex items-center justify-center">
-            <Card className="w-full max-w-md">
+            <Card className="w-full">
               <CardHeader>
-                <CardTitle>Leaderboard</CardTitle>
+                <CardTitle>Top Performers</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Leaderboard content will be added later */}
+                <Leaderboard />
               </CardContent>
             </Card>
           </div>
